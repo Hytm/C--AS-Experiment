@@ -34,21 +34,6 @@ public class AerospikeBenchmarkRunner
 
         _client = AerospikeClientHelper.GetInstance(_hostIp, _port, _docker, _log);
 
-        Console.WriteLine($"Running benchmark with the following parameters:");
-        Console.WriteLine($"\tHost IP: {_hostIp}");
-        Console.WriteLine($"\tPort: {_port}");
-        Console.WriteLine($"\tWrite Ratio: {_writeRatio}%");
-        Console.WriteLine($"\tConcurrency: {_concurrency}");
-        Console.WriteLine($"\tDuration: {_duration} seconds");
-        Console.WriteLine($"\tMaximum keys: {_maxKeys}");
-        Console.WriteLine($"\tReport delay: {_reportDelay} seconds");
-        Console.WriteLine($"\tObject size: {_size} bytes");
-        Console.WriteLine($"\tUpdate existing keys: {_update}");
-        Console.WriteLine($"\tTruncate set before starting: {_truncate}");
-        Console.WriteLine($"\tRunning in Docker: {_docker}");
-        Console.WriteLine($"\tLogging enabled: {_log}");
-        
-        Console.WriteLine("Initializing Aerospike client...");
         if (!_client.Connected)
         {
             throw new AerospikeException("Failed to initialize Aerospike client. Please check your connection parameters.");
