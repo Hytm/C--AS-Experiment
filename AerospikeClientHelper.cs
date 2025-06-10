@@ -30,6 +30,9 @@ public static class AerospikeClientHelper
         }
         policy.maxConnsPerNode = 200; // Set maximum connections per node
 
+        policy.user = "admin"; // Set your Aerospike user
+        policy.password = "admin"; // Set your Aerospike password
+
         var _client = new AerospikeClient(policy, new Host[] { new Host(hostIp, port) });
         if (!_client.Connected)
         {
