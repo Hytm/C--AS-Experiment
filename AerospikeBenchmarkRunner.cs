@@ -13,10 +13,11 @@ public class AerospikeBenchmarkRunner
     private readonly bool _update;
     private readonly bool _truncate;
     private readonly bool _docker;
+    private readonly bool _log;
 
     private AerospikeClient _client;
 
-    public AerospikeBenchmarkRunner(string hostIp, int port, uint writeRatio, int concurrency, ulong duration, ulong maxKeys, ulong reportDelay, ulong size, bool update, bool truncate, bool docker)
+    public AerospikeBenchmarkRunner(string hostIp, int port, uint writeRatio, int concurrency, ulong duration, ulong maxKeys, ulong reportDelay, ulong size, bool update, bool truncate, bool docker, bool log = false)
     {
         _hostIp = hostIp;
         _port = port;
@@ -29,8 +30,9 @@ public class AerospikeBenchmarkRunner
         _update = update;
         _truncate = truncate;
         _docker = docker;
+        _log = log;
 
-        _client = AerospikeClientHelper.GetInstance(_hostIp, _port, _docker);
+        _client = AerospikeClientHelper.GetInstance(_hostIp, _port, _docker, _log);
 
         Console.WriteLine($"Running benchmark with the following parameters:");
         Console.WriteLine($"\tHost IP: {_hostIp}");
@@ -44,6 +46,7 @@ public class AerospikeBenchmarkRunner
         Console.WriteLine($"\tUpdate existing keys: {_update}");
         Console.WriteLine($"\tTruncate set before starting: {_truncate}");
         Console.WriteLine($"\tRunning in Docker: {_docker}");
+        Console.WriteLine($"\tLogging enabled: {_log}");
         
         Console.WriteLine("Initializing Aerospike client...");
         if (!_client.Connected)

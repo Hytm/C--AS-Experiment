@@ -75,6 +75,12 @@ public class Program
             getDefaultValue: () => false);
         dockerOption.AddAlias("-D");
 
+        var logOption = new Option<bool>(
+            name: "--log",
+            description: "Whether running in with Logging enabled in Debug mode",
+            getDefaultValue: () => false);
+        dockerOption.AddAlias("-l");
+
         rootCommand.AddOption(hostIpOption);
         rootCommand.AddOption(portOption);
         rootCommand.AddOption(writeRatioOption);
@@ -86,6 +92,7 @@ public class Program
         rootCommand.AddOption(updateOption);
         rootCommand.AddOption(truncateOption);
         rootCommand.AddOption(dockerOption);
+        rootCommand.AddOption(logOption);
 
         rootCommand.SetHandler((InvocationContext context) =>
         {
@@ -100,10 +107,11 @@ public class Program
             var update = context.ParseResult.GetValueForOption(updateOption);
             var truncate = context.ParseResult.GetValueForOption(truncateOption);
             var docker = context.ParseResult.GetValueForOption(dockerOption);
+            var log = context.ParseResult.GetValueForOption(logOption);
 
             Console.WriteLine($"Starting load with parameters:\n\tHost IP: {hostIp}\n\tPort: {port}\n\tWrite Ratio: {writeRatio}\n\tConcurrency: {concurrency}\n\tDuration: {duration} seconds\n\tMaximum keys: {maxKeys}\n\tReport delay: {reportDelay} seconds\n\tObject size: {size}");
 
-            var runner = new AerospikeBenchmarkRunner(hostIp ?? "127.0.0.1", port, writeRatio, concurrency, duration, maxKeys, reportDelay, size, update, truncate, docker);
+            var runner = new AerospikeBenchmarkRunner(hostIp ?? "127.0.0.1", port, writeRatio, concurrency, duration, maxKeys, reportDelay, size, update, truncate, docker, log);
             runner.Run();
         });
 

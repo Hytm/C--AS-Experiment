@@ -13,10 +13,16 @@ public static class AerospikeClientHelper
     private static string _hostIp;
     private static int _port = 3000; // Default port
     private static bool _docker = false; // Default to not using Docker
-
+    private static bool _log = false; // Default to not logging
     private static readonly object _lock = new object();
-    private static AerospikeClient createClient(string hostIp, int port, bool docker)
+    private static AerospikeClient createClient(string hostIp, int port, bool docker, bool log)
     {
+        if (log)
+        {
+            Log.SetLevel(Log.Level.DEBUG);
+            Log.SetCallback(LogCallback);
+        }   
+        
         var policy = new ClientPolicy();
         if (docker)
         {
@@ -33,7 +39,27 @@ public static class AerospikeClientHelper
         return _client;
     }
     
-    public static AerospikeClient GetInstance(string hostIp)
+    private static void LogCallback(Log.Level level, String message)
+    {
+        if (level == Log.Level.DEBUG)
+        {
+            Console.WriteLine($"DEBUG: {message}");
+        }
+        else if (level == Log.Level.INFO)
+        {
+            Console.WriteLine($"INFO: {message}");
+        }
+        else if (level == Log.Level.WARN)
+        {
+            Console.WriteLine($"WARN: {message}");
+        }
+        else if (level == Log.Level.ERROR)
+        {
+            Console.WriteLine($"ERROR: {message}");
+        }
+    }
+
+    public static AerospikeClient GetInstance(string hostIp, bool log)
     {
         if (_instance == null)
         {
@@ -41,14 +67,14 @@ public static class AerospikeClientHelper
             {
                 if (_instance == null)
                 {
-                    _instance = createClient(hostIp, _port, _docker);
+                    _instance = createClient(hostIp, _port, _docker, log);
                 }
             }
         }
-            return _instance;
+        return _instance;
     }
     
-    public static AerospikeClient GetInstance(string hostIp, int port)
+    public static AerospikeClient GetInstance(string hostIp, int port, bool log)
     {
         if (_instance == null)
         {
@@ -56,14 +82,14 @@ public static class AerospikeClientHelper
             {
                 if (_instance == null)
                 {
-                    _instance = createClient(hostIp, port, _docker);
+                    _instance = createClient(hostIp, port, _docker, log);
                 }
             }
         }
         return _instance;
     }
 
-    public static AerospikeClient GetInstance(string hostIp, int port, bool docker)
+    public static AerospikeClient GetInstance(string hostIp, int port, bool docker, bool log)
     {
         if (_instance == null)
         {
@@ -71,7 +97,7 @@ public static class AerospikeClientHelper
             {
                 if (_instance == null)
                 {
-                    _instance = createClient(hostIp, port, docker);
+                    _instance = createClient(hostIp, port, docker, log);
                 }
             }
         }
@@ -95,7 +121,7 @@ public static class AerospikeClientHelper
             {
                 if (_instance == null)
                 {
-                    _instance = createClient(_hostIp, _port, _docker);
+                    _instance = createClient(_hostIp, _port, _docker, _log);
                 }
             }
         }
