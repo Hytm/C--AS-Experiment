@@ -2,20 +2,19 @@ using Aerospike.Client;
 
 public static class AerospikeClientHelper
 {
-
     public const string Namespace = "test";
     public const string SetName = "benchmark";
     public const string SingleKey = "single_key";
     public const string BinName = "bin1";
 
-    private static AerospikeClient _instance;
+    private static AerospikeClient? _instance;
 
-    private static string _hostIp;
-    private static int _port = 3000; // Default port
-    private static bool _docker = false; // Default to not using Docker
+    private static readonly string _hostIp = "127.0.0.1"; // Default host IP
+    private static readonly int _port = 3000; // Default port
+    private static readonly bool _docker = false; // Default to not using Docker
     
-    private static readonly object _lock = new object();
-    private static AerospikeClient createClient(string hostIp, int port, bool docker)
+    private static readonly Lock _lock = new();
+    private static AerospikeClient CreateClient(string hostIp, int port, bool docker)
     {
         var policy = new ClientPolicy();
         if (docker)
@@ -41,7 +40,7 @@ public static class AerospikeClientHelper
             {
                 if (_instance == null)
                 {
-                    _instance = createClient(hostIp, _port, _docker);
+                    _instance = CreateClient(hostIp, _port, _docker);
                 }
             }
         }
@@ -56,7 +55,7 @@ public static class AerospikeClientHelper
             {
                 if (_instance == null)
                 {
-                    _instance = createClient(hostIp, port, _docker);
+                    _instance = CreateClient(hostIp, port, _docker);
                 }
             }
         }
@@ -71,7 +70,7 @@ public static class AerospikeClientHelper
             {
                 if (_instance == null)
                 {
-                    _instance = createClient(hostIp, port, docker);
+                    _instance = CreateClient(hostIp, port, docker);
                 }
             }
         }
@@ -95,7 +94,7 @@ public static class AerospikeClientHelper
             {
                 if (_instance == null)
                 {
-                    _instance = createClient(_hostIp, _port, _docker);
+                    _instance = CreateClient(_hostIp, _port, _docker);
                 }
             }
         }
