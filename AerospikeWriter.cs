@@ -3,7 +3,9 @@ using Aerospike.Client;
 
 public class AerospikeWriter
 {
-    private readonly AerospikeClient _client;
+    private readonly string _hostIp;
+    private readonly int _port;
+    private readonly bool _docker;
     private readonly ulong _duration;
     private readonly List<Key> _keys;
     private readonly object _keysLock;
@@ -12,9 +14,11 @@ public class AerospikeWriter
     private readonly ulong _size;
     private readonly bool _update;
 
-    public AerospikeWriter(AerospikeClient client, ulong duration, List<Key> keys, object keysLock, Metrics metrics, ulong maxKeys, ulong size, bool update)
+    public AerospikeWriter(string hostIp, int port, bool docker, ulong duration, List<Key> keys, object keysLock, Metrics metrics, ulong maxKeys, ulong size, bool update)
     {
-        _client = client;
+        _hostIp = hostIp;
+        _port = port;
+        _docker = docker;
         _duration = duration;
         _keys = keys;
         _keysLock = keysLock;
@@ -32,61 +36,64 @@ public class AerospikeWriter
         var fakeContent = AerospikeClientHelper.MakeFakeContent(_size);
 
         var startTime = Stopwatch.StartNew();
-        while (startTime.Elapsed.TotalSeconds < _duration || _duration == 0)
+        using (var client = AerospikeClientHelper.GetInstance(_hostIp, _port, _docker))
         {
-            var bin = new Bin("bin1", fakeContent);
-            if (keysAdded < _maxKeys)
+            while (startTime.Elapsed.TotalSeconds < _duration || _duration == 0)
             {
-                var keyValue = Guid.NewGuid().ToString();
-                var key = new Key(AerospikeClientHelper.Namespace, AerospikeClientHelper.SetName, keyValue);
-                var stopwatch = Stopwatch.StartNew();
-                try
+                var bin = new Bin("bin1", fakeContent);
+                if (keysAdded < _maxKeys)
                 {
-                    _client.Put(wp, key, bin);
-                    _metrics.IncrementWriteCount();
-
-                    lock (_keysLock)
-                    {
-                        if (_keys.Count < 10000)
-                        {
-                            _keys.Add(key);
-                        }
-                    }
-                    keysAdded++;
-                }
-                catch (AerospikeException e)
-                {
-                    Console.WriteLine($"Error writing key {key.userKey}: {e.Message}\n{e.StackTrace}");
-                }
-                _metrics.AddWriteLatency(stopwatch.ElapsedMicroseconds());
-            }
-            else
-            {
-                if (_update)
-                {
-                    Key key;
-                    lock (_keysLock)
-                    {
-                        if (_keys.Count > 0)
-                        {
-                            key = _keys[random.Next(_keys.Count)];
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
+                    var keyValue = Guid.NewGuid().ToString();
+                    var key = new Key(AerospikeClientHelper.Namespace, AerospikeClientHelper.SetName, keyValue);
                     var stopwatch = Stopwatch.StartNew();
                     try
                     {
-                        _client.Put(wp, key, bin);
+                        client.Put(wp, key, bin);
                         _metrics.IncrementWriteCount();
+
+                        lock (_keysLock)
+                        {
+                            if (_keys.Count < 10000)
+                            {
+                                _keys.Add(key);
+                            }
+                        }
+                        keysAdded++;
                     }
                     catch (AerospikeException e)
                     {
-                        Console.WriteLine($"Error updating key {key.userKey}: {e.Message}\n{e.StackTrace}");
+                        Console.WriteLine($"Error writing key {key.userKey}: {e.Message}\n{e.StackTrace}");
                     }
                     _metrics.AddWriteLatency(stopwatch.ElapsedMicroseconds());
+                }
+                else
+                {
+                    if (_update)
+                    {
+                        Key key;
+                        lock (_keysLock)
+                        {
+                            if (_keys.Count > 0)
+                            {
+                                key = _keys[random.Next(_keys.Count)];
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                        var stopwatch = Stopwatch.StartNew();
+                        try
+                        {
+                            client.Put(wp, key, bin);
+                            _metrics.IncrementWriteCount();
+                        }
+                        catch (AerospikeException e)
+                        {
+                            Console.WriteLine($"Error updating key {key.userKey}: {e.Message}\n{e.StackTrace}");
+                        }
+                        _metrics.AddWriteLatency(stopwatch.ElapsedMicroseconds());
+                    }
                 }
             }
         }

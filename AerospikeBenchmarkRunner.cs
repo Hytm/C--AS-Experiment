@@ -14,8 +14,6 @@ public class AerospikeBenchmarkRunner
     private readonly bool _truncate;
     private readonly bool _docker;
 
-    private readonly AerospikeClient _client;
-
     public AerospikeBenchmarkRunner(string hostIp, int port, uint writeRatio, int concurrency, ulong duration, ulong maxKeys, ulong reportDelay, ulong size, bool update, bool truncate, bool docker)
     {
         _hostIp = hostIp;
@@ -29,13 +27,6 @@ public class AerospikeBenchmarkRunner
         _update = update;
         _truncate = truncate;
         _docker = docker;
-
-        _client = AerospikeClientHelper.GetInstance(_hostIp, _port, _docker);
-
-        if (!_client.Connected)
-        {
-            throw new AerospikeException("Failed to initialize Aerospike client. Please check your connection parameters.");
-        }
     }
 
     public void Run()
@@ -46,13 +37,19 @@ public class AerospikeBenchmarkRunner
 
         if (_truncate)
         {
-            AerospikeClientHelper.CleanSet(_client);
+            using (var client = AerospikeClientHelper.GetInstance(_hostIp, _port, _docker))
+            {
+                AerospikeClientHelper.CleanSet(client);
+            }
         }
 
         var writeConcurrency = (int)(_concurrency * _writeRatio / 100);
         if (writeConcurrency < 1)
         {
-            AerospikeClientHelper.ReadOnlyPreparation(_client, keys, keysLock, _maxKeys, _size);
+            using (var client = AerospikeClientHelper.GetInstance(_hostIp, _port, _docker))
+            {
+                AerospikeClientHelper.ReadOnlyPreparation(client, keys, keysLock, _maxKeys, _size);
+            }
         }
 
         var readConcurrency = _concurrency - writeConcurrency;
@@ -68,13 +65,13 @@ public class AerospikeBenchmarkRunner
         }
         for (int i = 0; i < writeConcurrency; i++)
         {
-            var writer = new AerospikeWriter(_client, _duration, keys, keysLock, metrics, keysPerThread, _size, _update);
+            var writer = new AerospikeWriter(_hostIp, _port, _docker, _duration, keys, keysLock, metrics, keysPerThread, _size, _update);
             tasks.Add(Task.Run(() => writer.Start()));
         }
 
         for (int i = 0; i < readConcurrency; i++)
         {
-            var reader = new AerospikeReader(_client, _duration, keys, keysLock, metrics);
+            var reader = new AerospikeReader(_hostIp, _port, _docker, _duration, keys, keysLock, metrics);
             tasks.Add(Task.Run(() => reader.Start()));
         }
 

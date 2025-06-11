@@ -7,8 +7,6 @@ public static class AerospikeClientHelper
     public const string SingleKey = "single_key";
     public const string BinName = "bin1";
 
-    private static AerospikeClient? _instance;
-
     private static readonly string _hostIp = "127.0.0.1"; // Default host IP
     private static readonly int _port = 3000; // Default port
     private static readonly bool _docker = false; // Default to not using Docker
@@ -34,46 +32,19 @@ public static class AerospikeClientHelper
 
     public static AerospikeClient GetInstance(string hostIp)
     {
-        if (_instance == null)
-        {
-            lock (_lock)
-            {
-                if (_instance == null)
-                {
-                    _instance = CreateClient(hostIp, _port, _docker);
-                }
-            }
-        }
+        var _instance = CreateClient(hostIp, _port, _docker);
         return _instance;
     }
     
     public static AerospikeClient GetInstance(string hostIp, int port)
     {
-        if (_instance == null)
-        {
-            lock (_lock)
-            {
-                if (_instance == null)
-                {
-                    _instance = CreateClient(hostIp, port, _docker);
-                }
-            }
-        }
+        var _instance = CreateClient(hostIp, port, _docker);
         return _instance;
     }
 
     public static AerospikeClient GetInstance(string hostIp, int port, bool docker)
     {
-        if (_instance == null)
-        {
-            lock (_lock)
-            {
-                if (_instance == null)
-                {
-                    _instance = CreateClient(hostIp, port, docker);
-                }
-            }
-        }
+         var _instance = CreateClient(hostIp, port, docker);
         return _instance;
     }
     
@@ -88,17 +59,8 @@ public static class AerospikeClientHelper
             throw new AerospikeException("Port is not set. Use GetInstance(string hostIp, int port) to initialize.");
         }
 
-        if (_instance == null)
-        {
-            lock (_lock)
-            {
-                if (_instance == null)
-                {
-                    _instance = CreateClient(_hostIp, _port, _docker);
-                }
-            }
-        }
-        return _instance;
+        var instance = CreateClient(_hostIp, _port, _docker);
+        return instance;
     }
 
     public static void CleanSet(AerospikeClient client)
