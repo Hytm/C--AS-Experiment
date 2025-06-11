@@ -44,7 +44,7 @@ public class AerospikeWriter
                 {
                     _client.Put(wp, key, bin);
                     _metrics.IncrementWriteCount();
-                    
+
                     lock (_keysLock)
                     {
                         if (_keys.Count < 10000)
@@ -56,7 +56,7 @@ public class AerospikeWriter
                 }
                 catch (AerospikeException e)
                 {
-                    Console.WriteLine($"Error writing key {key.userKey}: {e.Message}");
+                    Console.WriteLine($"Error writing key {key.userKey}: {e.Message}\n{e.StackTrace}");
                 }
                 _metrics.AddWriteLatency(stopwatch.ElapsedMicroseconds());
             }
@@ -84,7 +84,7 @@ public class AerospikeWriter
                     }
                     catch (AerospikeException e)
                     {
-                        Console.WriteLine($"Error updating key {key.userKey}: {e.Message}");
+                        Console.WriteLine($"Error updating key {key.userKey}: {e.Message}\n{e.StackTrace}");
                     }
                     _metrics.AddWriteLatency(stopwatch.ElapsedMicroseconds());
                 }

@@ -17,7 +17,7 @@ public class AerospikeBenchmarkRunner
 
     private AerospikeClient _client;
 
-    public AerospikeBenchmarkRunner(string hostIp, int port, uint writeRatio, int concurrency, ulong duration, ulong maxKeys, ulong reportDelay, ulong size, bool update, bool truncate, bool docker, bool log = false)
+    public AerospikeBenchmarkRunner(string hostIp, int port, uint writeRatio, int concurrency, ulong duration, ulong maxKeys, ulong reportDelay, ulong size, bool update, bool truncate, bool docker)
     {
         _hostIp = hostIp;
         _port = port;
@@ -30,9 +30,8 @@ public class AerospikeBenchmarkRunner
         _update = update;
         _truncate = truncate;
         _docker = docker;
-        _log = log;
 
-        _client = AerospikeClientHelper.GetInstance(_hostIp, _port, _docker, _log);
+        _client = AerospikeClientHelper.GetInstance(_hostIp, _port, _docker);
 
         if (!_client.Connected)
         {

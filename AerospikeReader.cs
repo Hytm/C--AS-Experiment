@@ -45,7 +45,7 @@ public class AerospikeReader
             }
             catch (AerospikeException e)
             {
-                Console.WriteLine($"Error reading key {key.userKey}: {e.Message}");
+                Console.WriteLine($"Error reading key {key.userKey}: {e.Message}\n{e.StackTrace}");
             }
             _metrics.AddReadLatency(stopwatch.ElapsedMicroseconds());
         }
