@@ -22,7 +22,7 @@ public static class AerospikeClientHelper
             policy.useServicesAlternate = true;
         }
         policy.maxConnsPerNode = 200; // Set maximum connections per node
-
+        
         var _client = new AerospikeClient(policy, new Host[] { new Host(hostIp, port) });
         if (!_client.Connected)
         {

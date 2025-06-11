@@ -3,4 +3,4 @@ distribution.tgz
 
 obj/
 bin/
-Sample.log
+trace.log

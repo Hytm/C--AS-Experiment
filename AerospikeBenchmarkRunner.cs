@@ -13,9 +13,8 @@ public class AerospikeBenchmarkRunner
     private readonly bool _update;
     private readonly bool _truncate;
     private readonly bool _docker;
-    private readonly bool _log;
 
-    private AerospikeClient _client;
+    private readonly AerospikeClient _client;
 
     public AerospikeBenchmarkRunner(string hostIp, int port, uint writeRatio, int concurrency, ulong duration, ulong maxKeys, ulong reportDelay, ulong size, bool update, bool truncate, bool docker)
     {
@@ -41,7 +40,6 @@ public class AerospikeBenchmarkRunner
 
     public void Run()
     {
-        
         var keys = new List<Key>();
         var keysLock = new object();
         var metrics = new Metrics();
